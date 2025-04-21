@@ -17,6 +17,7 @@ import LockIcon from "@/assets/icons/LockIcon.svg";
 import { useRouter } from "expo-router";
 import { useAuthStore } from "@/stores/useAuthStore";
 import { signIn } from "@/services/authService";
+import { signInWithGoogle } from "@/services/authService";
 
 export default function LoginScreen() {
   const router = useRouter();
@@ -37,12 +38,25 @@ export default function LoginScreen() {
 
   const onSubmit = async (data: any) => {
     setIsLoading(true);
+
     try {
       const user = await signIn(data.email, data.password);
       setUser(user);
       router.replace("/(tabs)/home");
     } catch (error: any) {
-      Alert.alert("Erro no login", error.message);
+      const message = error?.message || "";
+
+      if (
+        message.includes("Invalid login credentials") ||
+        message.includes("Invalid login")
+      ) {
+        Alert.alert("Erro", "Email ou senha inválidos.");
+      } else {
+        Alert.alert(
+          "Erro no login",
+          "Ocorreu um erro inesperado. Tente novamente."
+        );
+      }
     } finally {
       setIsLoading(false);
     }
