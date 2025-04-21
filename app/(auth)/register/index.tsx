@@ -5,6 +5,7 @@ import {
   TextInput,
   TouchableOpacity,
   Image,
+  Alert,
 } from "react-native";
 import SemioSplashLogo from "@/assets/images/SemioSplashLogo.svg";
 import SemioPet from "@/assets/images/SemioPet.svg";
@@ -15,10 +16,14 @@ import EyesIcon from "@/assets/icons/EyesIcon.svg";
 import LockIcon from "@/assets/icons/LockIcon.svg";
 import { useRouter } from "expo-router";
 import UserIcon from "@/assets/icons/UserIcon.svg";
+import { signUp } from "@/services/authService";
+import { useAuthStore } from "@/stores/useAuthStore";
 
 export default function LoginScreen() {
   const [showPassword, setShowPassword] = useState(false);
   const router = useRouter();
+  const setUser = useAuthStore((state) => state.setUser);
+  const [isLoading, setIsLoading] = useState(false);
 
   function handleLogin() {
     router.push("/(auth)/login");
@@ -26,15 +31,31 @@ export default function LoginScreen() {
 
   const { control, handleSubmit } = useForm({
     defaultValues: {
-      name: "",
       username: "",
       email: "",
       password: "",
+      confirmPassword: "",
     },
   });
 
-  const onSubmit = (data: { email: string; password: string }) => {
-    console.log(data);
+  const onSubmit = async (data: any) => {
+    const { password, confirmPassword } = data;
+
+    if (password !== confirmPassword) {
+      return Alert.alert("Erro", "As senhas não coincidem.");
+    }
+
+    setIsLoading(true);
+
+    try {
+      const user = await signUp(data.email, data.password, data.username);
+      setUser(user);
+      router.replace("/(auth)/login");
+    } catch (error: any) {
+      Alert.alert("Erro no cadastro", error.message);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -61,27 +82,6 @@ export default function LoginScreen() {
           </View>
 
           <View className="w-full px-6">
-            {/* name */}
-            <View className="w-full">
-              <Controller
-                control={control}
-                name="name"
-                render={({ field: { onChange, value } }) => (
-                  <View className="flex-row items-center bg-white rounded-xl px-4 py-1 mb-4 w-full gap-1">
-                    <UserIcon />
-                    <TextInput
-                      placeholder="Nome"
-                      placeholderTextColor="#A3A3A3"
-                      className="flex-1 text-base text-black"
-                      value={value}
-                      onChangeText={onChange}
-                      keyboardType="email-address"
-                      autoCapitalize="none"
-                    />
-                  </View>
-                )}
-              />
-            </View>
             {/* username */}
             <View className="w-full">
               <Controller
@@ -160,15 +160,53 @@ export default function LoginScreen() {
                 )}
               />
             </View>
+            {/* confirmar senha */}
+            <View className="w-full">
+              <Controller
+                control={control}
+                name="confirmPassword"
+                render={({ field: { onChange, value } }) => (
+                  <View className="flex-row items-center bg-white rounded-xl px-4 py-1 mb-4 w-full gap-1">
+                    <LockIcon />
+                    <TextInput
+                      className="flex-1 text-base text-black"
+                      placeholder="Confirmar senha"
+                      placeholderTextColor="#A3A3A3"
+                      secureTextEntry={!showPassword}
+                      value={value}
+                      onChangeText={onChange}
+                      autoCapitalize="none"
+                    />
+                    {/*Toogle para alterar visibilidade */}
+                    <TouchableOpacity
+                      onPress={() => setShowPassword((prev) => !prev)}
+                    >
+                      {showPassword ? (
+                        <Image
+                          source={require("@/assets/icons/CloseEyesIcon.png")}
+                          className="w-[25px] h-[25px] ml-2"
+                          resizeMode="contain"
+                        />
+                      ) : (
+                        <EyesIcon />
+                      )}
+                    </TouchableOpacity>
+                  </View>
+                )}
+              />
+            </View>
 
             {/* botão entrar */}
             <View>
               <TouchableOpacity
-                className="bg-[#0040DD] py-3 rounded-3xl items-center"
+                className={`py-3 rounded-3xl items-center ${
+                  isLoading ? "bg-[#0040DD]/60" : "bg-[#0040DD]"
+                }`}
                 onPress={handleSubmit(onSubmit)}
+                disabled={isLoading}
               >
                 <Text className="text-white font-semibold text-base">
-                  Cadastrar
+                  {isLoading ? "Cadastrando..." : "Cadastrar"}
                 </Text>
               </TouchableOpacity>
             </View>

@@ -5,6 +5,7 @@ import {
   TextInput,
   TouchableOpacity,
   Image,
+  Alert,
 } from "react-native";
 import SemioSplashLogo from "@/assets/images/SemioSplashLogo.svg";
 import SemioPet from "@/assets/images/SemioPet.svg";
@@ -14,9 +15,13 @@ import { useState } from "react";
 import EyesIcon from "@/assets/icons/EyesIcon.svg";
 import LockIcon from "@/assets/icons/LockIcon.svg";
 import { useRouter } from "expo-router";
+import { useAuthStore } from "@/stores/useAuthStore";
+import { signIn } from "@/services/authService";
 
 export default function LoginScreen() {
   const router = useRouter();
+  const setUser = useAuthStore((state) => state.setUser);
+  const [isLoading, setIsLoading] = useState(false);
 
   function handleRegister() {
     router.push("/(auth)/register");
@@ -30,8 +35,17 @@ export default function LoginScreen() {
     },
   });
 
-  const onSubmit = (data: { email: string; password: string }) => {
-    console.log(data);
+  const onSubmit = async (data: any) => {
+    setIsLoading(true);
+    try {
+      const user = await signIn(data.email, data.password);
+      setUser(user);
+      router.replace("/(tabs)/home");
+    } catch (error: any) {
+      Alert.alert("Erro no login", error.message);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -118,11 +132,14 @@ export default function LoginScreen() {
             {/* botão entrar */}
             <View>
               <TouchableOpacity
-                className="bg-[#0040DD] py-3 rounded-3xl items-center"
+                className={`py-3 rounded-3xl items-center ${
+                  isLoading ? "bg-[#0040DD]/60" : "bg-[#0040DD]"
+                }`}
                 onPress={handleSubmit(onSubmit)}
+                disabled={isLoading}
               >
                 <Text className="text-white font-semibold text-base">
-                  Entrar
+                  {isLoading ? "Entrando..." : "Entrar"}
                 </Text>
               </TouchableOpacity>
             </View>
