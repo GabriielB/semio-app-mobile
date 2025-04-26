@@ -29,7 +29,10 @@ export default function LoginScreen() {
   }
 
   const [showPassword, setShowPassword] = useState(false);
-  const { control, handleSubmit } = useForm({
+  const { control, handleSubmit } = useForm<{
+    email: string;
+    password: string;
+  }>({
     defaultValues: {
       email: "",
       password: "",

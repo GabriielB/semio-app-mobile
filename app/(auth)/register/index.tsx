@@ -29,7 +29,12 @@ export default function LoginScreen() {
     router.push("/(auth)/login");
   }
 
-  const { control, handleSubmit } = useForm({
+  const { control, handleSubmit } = useForm<{
+    username: string;
+    email: string;
+    password: string;
+    confirmPassword: string;
+  }>({
     defaultValues: {
       username: "",
       email: "",
@@ -50,6 +55,7 @@ export default function LoginScreen() {
     try {
       const user = await signUp(data.email, data.password, data.username);
       setUser(user);
+      Alert.alert("Cadastro realizado", "Agora você pode fazer login!");
       router.replace("/(auth)/login");
     } catch (error: any) {
       Alert.alert("Erro no cadastro", error.message);

@@ -1,5 +1,5 @@
 import { supabase } from "@/lib/supabase";
-import { AuthUser } from "@/stores/useAuthStore";
+import { AuthUser, useAuthStore } from "@/stores/useAuthStore";
 
 export async function signIn(
   email: string,
@@ -84,4 +84,12 @@ export async function signInWithGoogle() {
   });
 
   if (error) throw error;
+}
+
+export async function logout() {
+  const { error } = await supabase.auth.signOut();
+  if (error) throw error;
+
+  const clearUser = useAuthStore.getState().setUser;
+  clearUser(null);
 }
