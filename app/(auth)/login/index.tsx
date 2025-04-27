@@ -34,8 +34,8 @@ export default function LoginScreen() {
     password: string;
   }>({
     defaultValues: {
-      email: "",
-      password: "",
+      email: "admin@admin.com",
+      password: "semiologia",
     },
   });
 

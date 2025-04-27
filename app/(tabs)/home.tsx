@@ -5,9 +5,16 @@ import SemioHomePet from "@/assets/images/SemioHomePet.svg";
 import StarIcon from "@/assets/icons/StarIcon.svg";
 import MedalIcon from "@/assets/icons/MedalIcon.svg";
 import { useAuthStore } from "@/stores/useAuthStore";
+import { useRouter } from "expo-router";
 
 export default function HomeScreen() {
   const user = useAuthStore((state) => state.user);
+  const router = useRouter();
+
+  const handleQuizzPress = () => {
+    return router.push("/quizzes");
+  };
+
   return (
     <ScrollView
       className="bg-[#E3F2FF]"
@@ -55,7 +62,10 @@ export default function HomeScreen() {
 
       {/* Botões */}
       <View className="gap-5 items-center mt-4">
-        <TouchableOpacity className="w-[181px] h-[44px] bg-[#3995FF] rounded-3xl justify-center items-center">
+        <TouchableOpacity
+          className="w-[181px] h-[44px] bg-[#3995FF] rounded-3xl justify-center items-center"
+          onPress={handleQuizzPress}
+        >
           <Text className="text-white text-lg font-bold">QUIZZ</Text>
         </TouchableOpacity>
 
