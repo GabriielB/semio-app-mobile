@@ -40,3 +40,21 @@ export async function fetchQuizzes(page: number = 1, pageSize: number = 10) {
 
   return data;
 }
+
+/**
+ * Busca as perguntas de um quiz específico pelo ID.
+ */
+export async function fetchQuizQuestions(quizId: string) {
+  const { data, error } = await supabase
+    .from("questions")
+    .select("*")
+    .eq("quiz_id", quizId)
+    .order("created_at", { ascending: true });
+
+  if (error || !data) {
+    console.error("Erro ao buscar perguntas:", error?.message);
+    return [];
+  }
+
+  return data;
+}
