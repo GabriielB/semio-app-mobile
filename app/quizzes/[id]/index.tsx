@@ -23,6 +23,7 @@ export default function QuizPlayScreen() {
   const [score, setScore] = useState(0);
   const [timeLeft, setTimeLeft] = useState(60);
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
+  const [bonusPoints, setBonusPoints] = useState(0);
 
   useEffect(() => {
     loadQuestions();
@@ -59,7 +60,14 @@ export default function QuizPlayScreen() {
     option: { text: string; correct: boolean } | null
   ) {
     clearInterval(intervalRef.current!);
-    if (option?.correct) setScore((prev) => prev + 1);
+
+    if (option?.correct) {
+      setScore((prev) => prev + 1);
+
+      // calcular bônus com base no tempo restante (máx 10 por acerto)
+      const bonus = Math.round((timeLeft / 60) * 10);
+      setBonusPoints((prev) => prev + bonus);
+    }
 
     setTimeout(() => {
       setSelected(null);
@@ -70,8 +78,12 @@ export default function QuizPlayScreen() {
         router.push({
           pathname: "/quizzes/result",
           params: {
+            id,
             total: questions.length,
             correct: score + (option?.correct ? 1 : 0),
+            bonus:
+              bonusPoints +
+              (option?.correct ? Math.round((timeLeft / 60) * 10) : 0),
           },
         });
       }
