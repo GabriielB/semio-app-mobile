@@ -1,18 +1,9 @@
 import { supabase } from "@/lib/supabase";
 
-export async function fetchSummaries({
-  page = 1,
-  limit = 10,
-}: {
-  page?: number;
-  limit?: number;
-}) {
-  const from = (page - 1) * limit;
-  const to = from + limit - 1;
-
+export async function fetchSummaries(from = 0, to = 9) {
   const { data, error } = await supabase
     .from("summaries")
-    .select("id, title, category, cover_image")
+    .select("id, title, category, cover_image, file_url")
     .order("created_at", { ascending: false })
     .range(from, to);
 
@@ -32,5 +23,6 @@ export async function fetchCategories() {
   const uniqueCategories = Array.from(
     new Set(data.map((item) => item.category))
   );
+
   return uniqueCategories;
 }
