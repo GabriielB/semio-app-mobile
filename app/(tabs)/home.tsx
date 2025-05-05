@@ -15,6 +15,10 @@ export default function HomeScreen() {
     return router.push("/quizzes");
   };
 
+  const handleMindmapPress = () => {
+    return router.push("/mindmaps");
+  };
+
   return (
     <ScrollView
       className="bg-[#E3F2FF]"
@@ -25,10 +29,10 @@ export default function HomeScreen() {
       }}
       showsVerticalScrollIndicator={false}
     >
-      {/* Estatísticas diretamente na tela */}
-      <View className="bg-white rounded-3xl w-full px-4 py-4 shadow-md">
+      {/* estatisticas */}
+      <View className="bg-white rounded-3xl w-full px-4 py-2 shadow-md">
         <View className="flex-row items-center justify-between">
-          {/* Pontos */}
+          {/* pontos */}
           <View className="flex-1 items-center gap-1">
             <StarIcon width={25} height={25} />
             <Text className="text-black text-sm">Pontos</Text>
@@ -37,10 +41,10 @@ export default function HomeScreen() {
             </Text>
           </View>
 
-          {/* Divisor */}
+          {/* div */}
           <View className="w-[1px] h-[60px] bg-purple-200 mx-3" />
 
-          {/* Vitórias */}
+          {/* vitorias */}
           <View className="flex-1 items-center gap-1">
             <MedalIcon width={25} height={25} />
             <Text className="text-black text-sm">Vitórias</Text>
@@ -52,7 +56,6 @@ export default function HomeScreen() {
         </View>
       </View>
 
-      {/* Logo e Pet com menos espaçamento */}
       <View className="items-center">
         <SemioSplashLogo width={180} height={180} />
         <View className="mt-[-20px]">
@@ -60,8 +63,7 @@ export default function HomeScreen() {
         </View>
       </View>
 
-      {/* Botões */}
-      <View className="gap-5 items-center mt-4">
+      <View className="gap-3 items-center mt-2">
         <TouchableOpacity
           className="w-[181px] h-[44px] bg-[#3995FF] rounded-3xl justify-center items-center"
           onPress={handleQuizzPress}
@@ -71,6 +73,12 @@ export default function HomeScreen() {
 
         <TouchableOpacity className="w-[256px] h-[44px] bg-[#0040DD] rounded-3xl justify-center items-center">
           <Text className="text-white text-lg font-bold">Competitivo</Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          className="w-[256px] h-[44px] bg-[#007AFF] rounded-3xl justify-center items-center"
+          onPress={handleMindmapPress}
+        >
+          <Text className="text-white text-lg font-bold">Mapas Mentais</Text>
         </TouchableOpacity>
       </View>
     </ScrollView>
