@@ -69,7 +69,7 @@ export default function SummaryDetailScreen() {
 
   return (
     <View className="flex-1 bg-[#007AFF]">
-      {/* Header fixo */}
+      {/* header fixo */}
       <View className="px-4 pt-12 pb-4 flex-row items-center">
         <TouchableOpacity onPress={() => router.back()}>
           <ArrowLeftWhite width={24} height={24} />
@@ -79,7 +79,7 @@ export default function SummaryDetailScreen() {
         </Text>
       </View>
 
-      {/* Conteúdo rolável */}
+      {/* conteúdo rolável */}
       <View className="flex-1 bg-white rounded-t-3xl pt-6 px-4">
         <ScrollView
           contentContainerStyle={{ alignItems: "center", paddingBottom: 40 }}
