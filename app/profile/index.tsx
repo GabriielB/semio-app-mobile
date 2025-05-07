@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   View,
   Text,
@@ -11,6 +11,8 @@ import { useRouter } from "expo-router";
 import { useAuthStore } from "@/stores/useAuthStore";
 import ArrowLeft from "@/assets/icons/ArrowLeft.svg";
 import * as ImagePicker from "expo-image-picker";
+import * as FileSystem from "expo-file-system";
+import Constants from "expo-constants";
 import { supabase } from "@/lib/supabase";
 
 export default function ProfileScreen() {
@@ -18,6 +20,17 @@ export default function ProfileScreen() {
   const user = useAuthStore((state) => state.user);
   const updateUser = useAuthStore((state) => state.updateUser);
   const [loading, setLoading] = useState(false);
+
+  const supabaseUrl = Constants.expoConfig?.extra?.EXPO_PUBLIC_SUPABASE_URL!;
+
+  useEffect(() => {
+    (async () => {
+      const { status } = await ImagePicker.getMediaLibraryPermissionsAsync();
+      if (status !== "granted") {
+        await ImagePicker.requestMediaLibraryPermissionsAsync();
+      }
+    })();
+  }, []);
 
   const handleImagePick = async () => {
     try {
@@ -38,38 +51,60 @@ export default function ProfileScreen() {
       if (result.canceled || result.assets.length === 0) return;
 
       const image = result.assets[0];
-
-      setLoading(true);
-
-      const fileExt = image.uri.split(".").pop() || "jpg";
+      const fileUri = image.uri;
+      const fileExt = fileUri.split(".").pop() || "jpg";
       const fileName = `${user?.id}.${fileExt}`;
       const filePath = `avatars/${fileName}`;
 
-      const res = await fetch(image.uri);
-      const blob = await res.blob();
+      setLoading(true);
 
-      const { error: uploadError } = await supabase.storage
-        .from("profile-pictures")
-        .upload(filePath, blob, {
-          contentType: blob.type || "image/jpeg",
-          upsert: true,
-        });
+      const base64 = await FileSystem.readAsStringAsync(fileUri, {
+        encoding: FileSystem.EncodingType.Base64,
+      });
 
-      if (uploadError) {
-        console.error("Upload error:", uploadError);
-        Alert.alert("Erro", uploadError.message);
+      // converte base64 para array de bytes
+      const binaryString = atob(base64);
+      const len = binaryString.length;
+      const bytes = new Uint8Array(len);
+      for (let i = 0; i < len; i++) {
+        bytes[i] = binaryString.charCodeAt(i);
+      }
+
+      await supabase.storage.from("profile-pictures").remove([filePath]);
+
+      const { data: sessionData } = await supabase.auth.getSession();
+      const accessToken = sessionData?.session?.access_token;
+
+      const supabaseUrl =
+        Constants.expoConfig?.extra?.EXPO_PUBLIC_SUPABASE_URL!;
+      const uploadRes = await fetch(
+        `${supabaseUrl}/storage/v1/object/profile-pictures/${filePath}`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "image/jpeg",
+            Authorization: `Bearer ${accessToken}`,
+          },
+          body: bytes,
+        }
+      );
+
+      if (!uploadRes.ok) {
+        console.error("Erro ao fazer upload:", await uploadRes.text());
+        Alert.alert("Erro", "Falha ao enviar imagem para o Supabase.");
         return;
       }
 
-      const { data } = supabase.storage
+      const { data } = await supabase.storage
         .from("profile-pictures")
         .getPublicUrl(filePath);
 
-      const publicUrl = data.publicUrl;
+      const rawPublicUrl = data.publicUrl;
+      const publicUrl = `${rawPublicUrl}?v=${Date.now()}`; // quebrando o cache
 
       const { error: updateError } = await supabase
         .from("users")
-        .update({ profile_picture: publicUrl })
+        .update({ profile_picture: rawPublicUrl })
         .eq("id", user?.id);
 
       if (updateError) {
@@ -78,6 +113,7 @@ export default function ProfileScreen() {
         return;
       }
 
+      // func para atualizara a store com cache quebrado
       updateUser({ profile_picture: publicUrl });
       Alert.alert("Sucesso", "Foto de perfil atualizada!");
     } catch (e: any) {
@@ -89,7 +125,7 @@ export default function ProfileScreen() {
   };
 
   return (
-    <View className="flex-1 bg-white px-4 pt-12">
+    <View className="flex-1 bg-white px-4">
       <View className="pt-6 pb-4 flex-row items-center">
         <TouchableOpacity onPress={() => router.back()}>
           <ArrowLeft width={24} height={24} />
@@ -99,7 +135,10 @@ export default function ProfileScreen() {
         </Text>
       </View>
 
-      <TouchableOpacity onPress={handleImagePick} className="items-center mb-6">
+      <TouchableOpacity
+        onPress={handleImagePick}
+        className="items-center mb-6 pt-2"
+      >
         {loading ? (
           <ActivityIndicator size="large" color="#007AFF" />
         ) : (
@@ -113,31 +152,31 @@ export default function ProfileScreen() {
             resizeMode="cover"
           />
         )}
-        <Text className="text-sm text-[#007AFF] font-semibold mt-1">
+        <Text className="text-sm text-[#924BD0] font-semibold mt-1">
           Foto de perfil
         </Text>
       </TouchableOpacity>
 
       <View className="gap-4 mb-10 w-full">
-        <View className="bg-[#F4F4F4] rounded-xl px-4 py-2">
-          <Text className="text-xs text-[#777] mb-1">Email</Text>
+        <Text className="text-base text-[#1E1E1E]">Email</Text>
+        <View className="bg-[#F4F4F4] rounded-lg px-4 py-2 border border-[#924BD0]">
           <Text className="text-base text-[#1E1E1E]">{user?.email}</Text>
         </View>
 
-        <View className="bg-[#F4F4F4] rounded-xl px-4 py-2">
-          <Text className="text-xs text-[#777] mb-1">Nome de usuário</Text>
+        <Text className="text-base text-[#1E1E1E] mt-4">Nome de usuário</Text>
+        <View className="bg-[#F4F4F4] rounded-lg px-4 py-2 border border-[#924BD0]">
           <Text className="text-base text-[#1E1E1E]">{user?.username}</Text>
         </View>
       </View>
 
-      <TouchableOpacity
-        className="bg-[#0040DD] py-3 rounded-full items-center"
+      {/* <TouchableOpacity
+        className="bg-[##31144B] py-3 rounded-full items-center"
         onPress={() =>
-          Alert.alert("Em breve", "Função de editar perfil será implementada.")
+         
         }
       >
         <Text className="text-white font-bold text-base">Editar Perfil</Text>
-      </TouchableOpacity>
+      </TouchableOpacity> */}
     </View>
   );
 }

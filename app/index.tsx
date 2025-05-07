@@ -2,11 +2,10 @@ import { View, Text } from "react-native";
 import SemioSplashLogo from "@/assets/images/SemioSplashLogo.svg";
 import { useRouter } from "expo-router";
 import { useEffect } from "react";
-import { Buffer } from "buffer";
 
 export default function Index() {
   const router = useRouter();
-  global.Buffer = Buffer;
+
   useEffect(() => {
     const timeout = setTimeout(() => {
       router.replace("/(auth)/login");
