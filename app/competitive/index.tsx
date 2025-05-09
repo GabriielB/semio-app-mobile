@@ -126,7 +126,7 @@ export default function FriendsScreen() {
     <View className="flex-1 bg-[#007AFF]">
       <View className="pb-6 px-4 my-2 rounded-b-3xl bg-[#007AFF]">
         <View className="w-full h-20 flex-row items-center">
-          <TouchableOpacity onPress={() => router.back()}>
+          <TouchableOpacity onPress={() => router.replace("/(tabs)/home")}>
             <ArrowLeftWhite width={24} height={24} />
           </TouchableOpacity>
           <Text className="text-2xl font-bold text-white flex-1 text-center mr-6">
