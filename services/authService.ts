@@ -46,18 +46,14 @@ export async function signUp(
     .eq("id", userId)
     .maybeSingle();
 
-  if (!existingUser) {
-    const { error: insertError } = await supabase.from("users").insert({
-      id: userId,
-      email,
-      username,
-      profile_picture: null,
-      total_points: 0,
-      total_wins: 0,
-    });
-
-    if (insertError) throw insertError;
-  }
+  await supabase.from("users").upsert({
+    id: userId,
+    email,
+    username,
+    profile_picture: null,
+    total_points: 0,
+    total_wins: 0,
+  });
 
   //  chama a função RPC que confirma o email no Supabase
   const { error: confirmError } = await supabase.rpc("auto_confirm_user", {
