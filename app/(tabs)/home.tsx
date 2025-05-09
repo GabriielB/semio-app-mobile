@@ -19,6 +19,10 @@ export default function HomeScreen() {
     return router.push("/mindmaps");
   };
 
+  const handleCompetitive = () => {
+    return router.push("/competitive");
+  };
+
   return (
     <ScrollView
       className="bg-[#E3F2FF]"
@@ -71,7 +75,10 @@ export default function HomeScreen() {
           <Text className="text-white text-lg font-bold">QUIZZ</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity className="w-[256px] h-[44px] bg-[#0040DD] rounded-3xl justify-center items-center">
+        <TouchableOpacity
+          className="w-[256px] h-[44px] bg-[#0040DD] rounded-3xl justify-center items-center"
+          onPress={handleCompetitive}
+        >
           <Text className="text-white text-lg font-bold">Competitivo</Text>
         </TouchableOpacity>
         <TouchableOpacity
