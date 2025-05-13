@@ -80,8 +80,7 @@ export default function FriendsScreen() {
   };
 
   const handleChallenge = (friendId: string) => {
-    Alert.alert("Desafio enviado para", friendId);
-    // router.push(`/competitive/${friendId}/challenge`);
+    router.push(`/competitive/challenge/${friendId}`);
   };
 
   const renderItem = ({ item }: { item: Friend }) => (
