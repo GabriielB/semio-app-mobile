@@ -21,16 +21,18 @@ export default function RankScreen() {
   }, [user]);
 
   const fetchFriendsRanking = async () => {
-    const { data: friendList, error } = await supabase.rpc("get_all_friends", {
+    const { data: friendIds, error: rpcError } = await supabase.rpc<{
+      id: string;
+    }>("get_all_friends", {
       current_user_id: user!.id,
     });
 
-    if (error) {
-      console.error("Erro ao buscar amigos via função RPC:", error.message);
+    if (rpcError) {
+      console.error("Erro ao buscar amigos com função RPC:", rpcError.message);
       return;
     }
 
-    const allIds = [user!.id, ...new Set(friendList.map((f: any) => f.id))];
+    const allIds = [user!.id, ...(friendIds?.map((f) => f.id) ?? [])];
 
     const { data: usersData, error: usersError } = await supabase
       .from("users")
@@ -50,6 +52,9 @@ export default function RankScreen() {
         profile_picture: u.profile_picture,
         total_points: u.total_points ?? 0,
       }));
+    console.log("Amigos retornados:", friendIds);
+    console.log("IDs buscados:", allIds);
+    console.log("Usuários encontrados:", usersData);
 
     setFriends(sorted);
   };
@@ -66,7 +71,7 @@ export default function RankScreen() {
           Ranking
         </Text>
 
-        {/* PÓDIO MAIOR */}
+        {/* PÓDIO */}
         <View className="flex-row justify-center items-end mt-12 px-4 space-x-6 gap-1">
           {/* 2º lugar */}
           {top3[1] && (
@@ -139,7 +144,7 @@ export default function RankScreen() {
           )}
 
           {/* 3º lugar */}
-          {top3[2] && friends.length >= 4 && (
+          {top3[2] && (
             <View
               className="bg-[#FFEFE4] w-32 h-52 items-center justify-start pt-4 shadow-md"
               style={{
@@ -172,10 +177,10 @@ export default function RankScreen() {
           )}
         </View>
 
-        {/* ÁREA BRANCA PREENCHENDO O RESTO */}
+        {/* ÁREA BRANCA */}
         <View className="flex-1 bg-white mt-8 rounded-t-3xl px-4 pt-6 pb-4">
           {hasNoFriends ? (
-            <Text className="text-center text-lg  text-[#924BD0] mt-4">
+            <Text className="text-center text-lg text-[#924BD0] mt-4">
               Nenhum amigo no ranking ainda 😢
             </Text>
           ) : (
@@ -217,7 +222,6 @@ export default function RankScreen() {
             </ScrollView>
           )}
 
-          {/* Texto de sugestão para adicionar mais amigos */}
           {shouldShowSuggestion && (
             <Text className="text-center text-lg text-[#924BD0] mt-4 mb-10 pb-10">
               Adicione mais amigos para aumentar seu ranking
