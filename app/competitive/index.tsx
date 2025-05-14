@@ -16,6 +16,7 @@ import AddFriendIcon from "@/assets/icons/AddFriendIcon.svg";
 import BellIcon from "@/assets/icons/BellIcon.svg";
 import ChallengeIcon from "@/assets/icons/ChallengeIcon.svg";
 import TrashIcon from "@/assets/icons/TrashIcon.svg";
+import CompetitionFinish from "@/assets/icons/CompetitionFinish.svg";
 import { useFocusEffect } from "expo-router";
 import { useCallback } from "react";
 import { supabase } from "@/lib/supabase";
@@ -80,8 +81,7 @@ export default function FriendsScreen() {
   };
 
   const handleChallenge = (friendId: string) => {
-    Alert.alert("Desafio enviado para", friendId);
-    // router.push(`/competitive/${friendId}/challenge`);
+    router.push(`/competitive/challenge/${friendId}`);
   };
 
   const renderItem = ({ item }: { item: Friend }) => (
@@ -147,6 +147,12 @@ export default function FriendsScreen() {
                   <View className="w-2 h-2 bg-red-500 rounded-full absolute top-0 right-0" />
                 )}
               </View>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              onPress={() => router.push("/competitive/completed")}
+            >
+              <CompetitionFinish width={26} height={26} />
             </TouchableOpacity>
 
             <TouchableOpacity
