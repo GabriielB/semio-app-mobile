@@ -12,10 +12,13 @@ import { useLocalSearchParams, useRouter } from "expo-router";
 import ArrowLeftWhite from "@/assets/icons/ArrowLeftWhite.svg";
 import { fetchQuestionsByQuizId } from "@/services/questionService";
 import { supabase } from "@/lib/supabase";
+import { useAuthStore } from "@/stores/useAuthStore";
+import { competitionService } from "@/services/competitionService";
 
 export default function CompetitiveQuizPlayScreen() {
   const router = useRouter();
   const { id } = useLocalSearchParams<{ id: string }>();
+  const user = useAuthStore((state) => state.user);
   const [questions, setQuestions] = useState<any[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [loading, setLoading] = useState(true);
@@ -67,7 +70,7 @@ export default function CompetitiveQuizPlayScreen() {
     }
   }
 
-  function handleNextQuestion(
+  async function handleNextQuestion(
     option: { text: string; correct: boolean } | null
   ) {
     clearInterval(intervalRef.current!);
@@ -78,21 +81,38 @@ export default function CompetitiveQuizPlayScreen() {
       setBonusPoints((prev) => prev + bonus);
     }
 
-    setTimeout(() => {
+    setTimeout(async () => {
       setSelected(null);
       setTimeLeft(60);
+
       if (currentIndex < questions.length - 1) {
         setCurrentIndex((prev) => prev + 1);
       } else {
+        const finalScore = score + (option?.correct ? 1 : 0);
+        const bonus =
+          bonusPoints +
+          (option?.correct ? Math.round((timeLeft / 60) * 10) : 0);
+
+        try {
+          await competitionService.registerScore(
+            id!,
+            user!.id,
+            finalScore,
+            questions.length,
+            bonus
+          );
+        } catch (err) {
+          console.error("Erro ao registrar pontuação:", err);
+          Alert.alert("Erro", "Não foi possível registrar sua pontuação.");
+        }
+
         router.push({
           pathname: "/competitive/challenge/[id]/results",
           params: {
             id,
-            total: questions.length,
-            correct: score + (option?.correct ? 1 : 0),
-            bonus:
-              bonusPoints +
-              (option?.correct ? Math.round((timeLeft / 60) * 10) : 0),
+            total: questions.length.toString(),
+            correct: finalScore.toString(),
+            bonus: bonus.toString(),
           },
         });
       }
@@ -111,7 +131,6 @@ export default function CompetitiveQuizPlayScreen() {
 
   return (
     <View className="flex-1 bg-[#007AFF]">
-      {/* Header */}
       <View className="px-2 pt-12 pb-4">
         <View className="flex-row items-center">
           <TouchableOpacity onPress={() => router.back()}>
@@ -188,7 +207,6 @@ export default function CompetitiveQuizPlayScreen() {
               </View>
             </ScrollView>
 
-            {/* Footer */}
             <View className="px-6 pb-4 flex-row items-center gap-4">
               <View className="flex-1 h-2 bg-gray-200 rounded-full overflow-hidden">
                 <View

@@ -1,8 +1,15 @@
-import React from "react";
-import { View, Text, TouchableOpacity } from "react-native";
+import React, { useEffect, useState } from "react";
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  ActivityIndicator,
+  Alert,
+} from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import ArrowLeftWhite from "@/assets/icons/ArrowLeftWhite.svg";
 import ProgressCircle from "@/components/ProgressCircle";
+import { supabase } from "@/lib/supabase";
 
 export default function ChallengeResultScreen() {
   const router = useRouter();
@@ -18,6 +25,39 @@ export default function ChallengeResultScreen() {
   const bonusPoints = parseInt(bonus || "0");
   const percentage = Math.round((correctNumber / totalNumber) * 100);
   const finalScore = percentage + bonusPoints;
+
+  const [bothFinished, setBothFinished] = useState<boolean | null>(null);
+
+  useEffect(() => {
+    checkIfBothPlayersFinished();
+  }, []);
+
+  async function checkIfBothPlayersFinished() {
+    try {
+      const { data, error } = await supabase
+        .from("competition_players")
+        .select("user_id, finished")
+        .eq("competition_id", id);
+
+      if (error) throw error;
+
+      console.log("Jogadores encontrados:", data);
+
+      // ⚠️ Obter apenas user_id únicos que terminaram
+      const uniqueFinishedUserIds = Array.from(
+        new Set(
+          (data || []).filter((p) => p.finished === true).map((p) => p.user_id)
+        )
+      );
+
+      console.log("Jogadores únicos que finalizaram:", uniqueFinishedUserIds);
+
+      setBothFinished(uniqueFinishedUserIds.length >= 2);
+    } catch (err) {
+      console.error("Erro ao verificar jogadores:", err);
+      setBothFinished(false);
+    }
+  }
 
   return (
     <View className="flex-1 bg-[#007AFF]">
@@ -47,12 +87,24 @@ export default function ChallengeResultScreen() {
 
         {/* Ações */}
         <View className="gap-5 items-center mt-6 pt-4">
-          <TouchableOpacity
-            className="bg-[#0040DD] w-[256px] h-[44px] py-3 rounded-full items-center"
-            onPress={() => router.replace("/competitive")}
-          >
-            <Text className="text-white font-bold text-lg">Ver Ranking</Text>
-          </TouchableOpacity>
+          {bothFinished === null ? (
+            <ActivityIndicator color="#0040DD" />
+          ) : bothFinished ? (
+            <TouchableOpacity
+              className="bg-[#0040DD] w-[256px] h-[44px] py-3 rounded-full items-center"
+              onPress={() =>
+                router.replace(`/competitive/challenge/${id}/winner`)
+              }
+            >
+              <Text className="text-white font-bold text-lg">Ver Ranking</Text>
+            </TouchableOpacity>
+          ) : (
+            <View className="bg-gray-700 w-[256px] h-[44px] py-3 rounded-full items-center justify-center">
+              <Text className="text-white font-bold text-lg">
+                Aguardando jogador...
+              </Text>
+            </View>
+          )}
 
           <TouchableOpacity
             className="border-2 border-[#0040DD] w-[181px] h-[44px] py-3 rounded-full items-center"

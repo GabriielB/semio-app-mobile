@@ -19,13 +19,13 @@ export const competitionService = {
 
     const competitionId = data.id;
 
-    // Registra o desafiante
     const { error: playerInsertError } = await supabase
       .from("competition_players")
       .insert({
         competition_id: competitionId,
         user_id: challengerId,
         score: 0,
+        finished: false,
       });
 
     if (playerInsertError) throw playerInsertError;
@@ -46,6 +46,7 @@ export const competitionService = {
   },
 
   async acceptChallenge(competitionId: string, userId: string) {
+    // Atualiza status da competição
     const { error: updateError } = await supabase
       .from("competitions")
       .update({ status: "accepted" })
@@ -53,27 +54,52 @@ export const competitionService = {
 
     if (updateError) throw updateError;
 
+    // verifica se o jogador já está registrado na competição
+    const { data: existingPlayers, error: fetchError } = await supabase
+      .from("competition_players")
+      .select("id")
+      .eq("competition_id", competitionId)
+      .eq("user_id", userId);
+
+    if (fetchError) throw fetchError;
+
+    if (existingPlayers.length > 0) return;
+
     const { error: insertError } = await supabase
       .from("competition_players")
       .insert({
         competition_id: competitionId,
         user_id: userId,
         score: 0,
+        finished: false,
       });
 
     if (insertError) throw insertError;
   },
 
-  async registerScore(competitionId: string, userId: string, score: number) {
+  async registerScore(
+    competitionId: string,
+    userId: string,
+    score: number,
+    totalQuestions: number,
+    bonusPoints: number
+  ) {
+    const percentage = Math.round((score / totalQuestions) * 100);
+
+    const finalScore = percentage + bonusPoints;
+
     const { error } = await supabase
       .from("competition_players")
-      .update({ score })
+      .update({
+        score,
+        finished: true,
+        final_score: finalScore,
+      })
       .eq("competition_id", competitionId)
       .eq("user_id", userId);
 
     if (error) throw error;
   },
-
   async listReceivedChallenges(userId: string) {
     const { data, error } = await supabase
       .from("competitions")
