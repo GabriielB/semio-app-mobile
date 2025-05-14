@@ -100,7 +100,6 @@ export default function ChallengeScreen() {
 
   return (
     <View className="flex-1 bg-[#007AFF]">
-      {/* Header */}
       <View className="pb-6 px-4 my-2 rounded-b-3xl bg-[#007AFF]">
         <View className="w-full h-20 flex-row items-center">
           <TouchableOpacity onPress={() => router.back()}>
@@ -112,7 +111,6 @@ export default function ChallengeScreen() {
         </View>
       </View>
 
-      {/* Conteúdo com ScrollView */}
       <ScrollView
         className="flex-1 bg-white rounded-t-3xl px-4 pt-8"
         contentContainerStyle={{ alignItems: "center", paddingBottom: 40 }}
@@ -158,7 +156,7 @@ export default function ChallengeScreen() {
               </Text>
             </View>
 
-            {/* Avatar da direita (amigo) */}
+            {/* avatar da direita (amigo) */}
             <View
               style={{
                 position: "absolute",
@@ -186,7 +184,7 @@ export default function ChallengeScreen() {
           </ImageBackground>
         </View>
 
-        {/* Dropdowns */}
+        {/* dropdowns */}
         <Dropdown
           style={{
             height: 50,
@@ -226,7 +224,6 @@ export default function ChallengeScreen() {
           onChange={(item) => setSelectedQuiz(item.value)}
         />
 
-        {/* Botão */}
         <TouchableOpacity
           className="bg-[#3995FF] w-[257px] py-3 px-4 rounded-3xl mt-8"
           onPress={handleStartChallenge}

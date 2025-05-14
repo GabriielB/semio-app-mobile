@@ -57,7 +57,9 @@ export const friendService = {
     const { error } = await supabase
       .from("friends")
       .delete()
-      .match({ user_id: userId, friend_id: friendId });
+      .or(
+        `and(user_id.eq.${userId},friend_id.eq.${friendId}),and(user_id.eq.${friendId},friend_id.eq.${userId})`
+      );
 
     if (error) {
       console.error("Erro ao excluir amigo:", error.message);
@@ -82,19 +84,36 @@ export const friendService = {
       return false;
     }
 
-    const { error: insertError } = await supabase.from("friends").insert([
-      { user_id: userId, friend_id: friendId },
-      { user_id: friendId, friend_id: userId },
-    ]);
+    // Antes de inserir, garantir que os dois lados ainda não existam
+    const { data: existing, error: existingError } = await supabase
+      .from("friends")
+      .select("id")
+      .or(
+        `and(user_id.eq.${userId},friend_id.eq.${friendId}),and(user_id.eq.${friendId},friend_id.eq.${userId})`
+      );
 
-    if (insertError) {
-      console.error("Erro ao criar vínculo de amizade:", insertError.message);
+    if (existingError) {
+      console.error(
+        "Erro ao verificar amizades existentes:",
+        existingError.message
+      );
       return false;
+    }
+
+    if (existing?.length === 0) {
+      const { error: insertError } = await supabase.from("friends").insert([
+        { user_id: userId, friend_id: friendId },
+        { user_id: friendId, friend_id: userId },
+      ]);
+
+      if (insertError) {
+        console.error("Erro ao criar vínculo de amizade:", insertError.message);
+        return false;
+      }
     }
 
     return true;
   },
-
   async listFriendRequests(userId: string) {
     const { data, error } = await supabase
       .from("friend_requests")
