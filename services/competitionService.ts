@@ -11,6 +11,8 @@ export const competitionService = {
       .insert({
         quiz_id: quizId,
         status: "pending",
+        challenger_id: challengerId,
+        opponent_id: opponentId,
       })
       .select("id")
       .single();
@@ -32,7 +34,6 @@ export const competitionService = {
 
     return competitionId;
   },
-
   async listPendingChallenges(userId: string) {
     const { data, error } = await supabase
       .from("competitions")
@@ -46,7 +47,6 @@ export const competitionService = {
   },
 
   async acceptChallenge(competitionId: string, userId: string) {
-    // Atualiza status da competição
     const { error: updateError } = await supabase
       .from("competitions")
       .update({ status: "accepted" })
@@ -54,7 +54,6 @@ export const competitionService = {
 
     if (updateError) throw updateError;
 
-    // verifica se o jogador já está registrado na competição
     const { data: existingPlayers, error: fetchError } = await supabase
       .from("competition_players")
       .select("id")
@@ -62,7 +61,6 @@ export const competitionService = {
       .eq("user_id", userId);
 
     if (fetchError) throw fetchError;
-
     if (existingPlayers.length > 0) return;
 
     const { error: insertError } = await supabase
@@ -85,10 +83,10 @@ export const competitionService = {
     bonusPoints: number
   ) {
     const percentage = Math.round((score / totalQuestions) * 100);
-
     const finalScore = percentage + bonusPoints;
 
-    const { error } = await supabase
+    // Atualiza score do jogador atual
+    const { error: updateError } = await supabase
       .from("competition_players")
       .update({
         score,
@@ -98,7 +96,25 @@ export const competitionService = {
       .eq("competition_id", competitionId)
       .eq("user_id", userId);
 
-    if (error) throw error;
+    if (updateError) throw updateError;
+
+    // Pega todos os jogadores da competição
+    const { data: players, error: fetchError } = await supabase
+      .from("competition_players")
+      .select("user_id, finished")
+      .eq("competition_id", competitionId);
+
+    if (fetchError) throw fetchError;
+
+    const allFinished = players?.every((p) => p.finished);
+
+    // ✅ Somente se houverem 2 jogadores e ambos finalizaram
+    if ((players || []).length === 2 && allFinished) {
+      const { error: callError } = await supabase.rpc("finalizar_competicao", {
+        comp_id: competitionId,
+      });
+      if (callError) throw callError;
+    }
   },
   async listReceivedChallenges(userId: string) {
     const { data, error } = await supabase
@@ -109,6 +125,7 @@ export const competitionService = {
       status,
       created_at,
       quiz_id,
+      opponent_id,
       quizzes (id, title),
       competition_players (
         user_id,
@@ -116,17 +133,45 @@ export const competitionService = {
       )
     `
       )
+      .eq("status", "pending")
+      .or(`opponent_id.eq.${userId},opponent_id.is.null`)
       .order("created_at", { ascending: false });
 
     if (error) throw error;
 
-    return (data || [])
-      .filter((comp: any) => comp.status === "pending")
-      .filter((comp: any) => {
-        const alreadyJoined = comp.competition_players.some(
-          (p: any) => p.user_id === userId
-        );
-        return !alreadyJoined;
-      });
+    return (data || []).filter((comp: any) => {
+      // ⚠️ Verifica se o desafio foi enviado para o usuário logado (via opponent_id)
+      const isTargetedToUser = comp.opponent_id === userId;
+      const alreadyJoined = comp.competition_players.some(
+        (p: any) => p.user_id === userId
+      );
+      console.log(data);
+      return isTargetedToUser && !alreadyJoined;
+    });
+  },
+
+  async listCompletedChallenges(userId: string) {
+    const { data, error } = await supabase
+      .from("competitions")
+      .select(
+        `
+        id,
+        status,
+        created_at,
+        quizzes (title),
+        competition_players (
+          user_id,
+          users (username, profile_picture)
+        )
+      `
+      )
+      .eq("status", "completed")
+      .order("created_at", { ascending: false });
+
+    if (error) throw error;
+
+    return (data || []).filter((comp: any) =>
+      comp.competition_players.some((p: any) => p.user_id === userId)
+    );
   },
 };

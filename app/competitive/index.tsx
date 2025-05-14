@@ -16,7 +16,7 @@ import AddFriendIcon from "@/assets/icons/AddFriendIcon.svg";
 import BellIcon from "@/assets/icons/BellIcon.svg";
 import ChallengeIcon from "@/assets/icons/ChallengeIcon.svg";
 import TrashIcon from "@/assets/icons/TrashIcon.svg";
-import MedalIcon from "@/assets/icons/MedalIcon.svg";
+import CompetitionFinish from "@/assets/icons/CompetitionFinish.svg";
 import { useFocusEffect } from "expo-router";
 import { useCallback } from "react";
 import { supabase } from "@/lib/supabase";
@@ -152,7 +152,7 @@ export default function FriendsScreen() {
             <TouchableOpacity
               onPress={() => router.push("/competitive/completed")}
             >
-              <MedalIcon width={26} height={26} />
+              <CompetitionFinish width={26} height={26} />
             </TouchableOpacity>
 
             <TouchableOpacity

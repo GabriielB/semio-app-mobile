@@ -81,12 +81,6 @@ export default function ChallengeScreen() {
         selectedQuiz
       );
 
-      await supabase.from("competition_players").insert({
-        competition_id: competitionId,
-        user_id: user.id,
-        score: 0,
-      });
-
       router.replace(`/competitive/challenge/${competitionId}/play`);
     } catch (error: any) {
       console.error(error);

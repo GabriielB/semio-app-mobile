@@ -11,7 +11,7 @@ import { useRouter } from "expo-router";
 import { useAuthStore } from "@/stores/useAuthStore";
 import ArrowLeftWhite from "@/assets/icons/ArrowLeftWhite.svg";
 import MedalIcon from "@/assets/icons/MedalIcon.svg";
-import { supabase } from "@/lib/supabase";
+import { competitionService } from "@/services/competitionService";
 
 export default function CompletedChallengesScreen() {
   const router = useRouter();
@@ -28,34 +28,21 @@ export default function CompletedChallengesScreen() {
   const fetchCompletedChallenges = async () => {
     if (!user?.id) return;
     setLoading(true);
-    const { data, error } = await supabase
-      .from("competitions")
-      .select(
-        `
-        id,
-        status,
-        created_at,
-        quizzes (title),
-        competition_players (
-          user_id,
-          users (username, profile_picture)
-        )
-      `
-      )
-      .eq("status", "completed")
-      .order("created_at", { ascending: false });
 
-    if (!error && data) {
-      const filtered = data.filter((c: any) =>
-        c.competition_players.some((p: any) => p.user_id === user.id)
-      );
-      setChallenges(filtered);
+    try {
+      const data = await competitionService.listCompletedChallenges(user.id);
+      setChallenges(data);
+    } catch (err) {
+      console.error("Erro ao buscar desafios finalizados:", err);
     }
 
     setLoading(false);
   };
 
   const renderItem = ({ item }: { item: any }) => {
+    const self = item.competition_players.find(
+      (p: any) => p.user_id === user?.id
+    );
     const opponent = item.competition_players.find(
       (p: any) => p.user_id !== user?.id
     );
@@ -74,7 +61,7 @@ export default function CompletedChallengesScreen() {
             />
             <View>
               <Text className="text-[#31144B] font-semibold">
-                {opponent?.users?.username ?? "Jogador"}
+                Contra: {opponent?.users?.username ?? "Jogador"}
               </Text>
               <Text className="text-sm text-[#666]">
                 Quiz: {item.quizzes?.title ?? "Indefinido"}
@@ -86,9 +73,11 @@ export default function CompletedChallengesScreen() {
             onPress={() =>
               router.push(`/competitive/challenge/${item.id}/winner`)
             }
-            className="p-2"
+            className="bg-[#3995FF] px-4 py-2 rounded-full shadow-sm"
           >
-            <MedalIcon width={24} height={24} />
+            <Text className="text-white text-sm font-bold text-center">
+              Visualizar
+            </Text>
           </TouchableOpacity>
         </View>
       </View>
