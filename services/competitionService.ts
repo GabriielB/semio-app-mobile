@@ -85,7 +85,7 @@ export const competitionService = {
     const percentage = Math.round((score / totalQuestions) * 100);
     const finalScore = percentage + bonusPoints;
 
-    // Atualiza score do jogador atual
+    // atualiza score do jogador atual
     const { error: updateError } = await supabase
       .from("competition_players")
       .update({
@@ -98,7 +98,7 @@ export const competitionService = {
 
     if (updateError) throw updateError;
 
-    // Pega todos os jogadores da competição
+    // pega todos os jogadores da competição
     const { data: players, error: fetchError } = await supabase
       .from("competition_players")
       .select("user_id, finished")
@@ -108,7 +108,7 @@ export const competitionService = {
 
     const allFinished = players?.every((p) => p.finished);
 
-    // ✅ Somente se houverem 2 jogadores e ambos finalizaram
+    //  somente se houverem 2 jogadores e ambos finalizaram
     if ((players || []).length === 2 && allFinished) {
       const { error: callError } = await supabase.rpc("finalizar_competicao", {
         comp_id: competitionId,
@@ -140,7 +140,7 @@ export const competitionService = {
     if (error) throw error;
 
     return (data || []).filter((comp: any) => {
-      // ⚠️ Verifica se o desafio foi enviado para o usuário logado (via opponent_id)
+      //  verifica se o desafio foi enviado para o usuário logado (via opponent_id)
       const isTargetedToUser = comp.opponent_id === userId;
       const alreadyJoined = comp.competition_players.some(
         (p: any) => p.user_id === userId

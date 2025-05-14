@@ -94,7 +94,6 @@ export default function CompletedChallengesScreen() {
 
   return (
     <View className="flex-1 bg-[#007AFF]">
-      {/* Header */}
       <View className="pb-6 px-4 rounded-b-3xl bg-[#007AFF]">
         <View className="w-full h-20 flex-row items-center">
           <TouchableOpacity onPress={() => router.replace("/competitive")}>
@@ -106,7 +105,6 @@ export default function CompletedChallengesScreen() {
         </View>
       </View>
 
-      {/* Lista */}
       <View className="flex-1 bg-white rounded-t-3xl -mt-6 pt-6">
         {loading ? (
           <ActivityIndicator size="large" color="#924BD0" className="mt-10" />
