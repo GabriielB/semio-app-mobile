@@ -1,18 +1,21 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
   View,
   Text,
   TouchableOpacity,
   ActivityIndicator,
-  Alert,
+  StyleSheet,
 } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
+import LottieView from "lottie-react-native";
 import ArrowLeftWhite from "@/assets/icons/ArrowLeftWhite.svg";
 import ProgressCircle from "@/components/ProgressCircle";
 import { supabase } from "@/lib/supabase";
 
 export default function ChallengeResultScreen() {
   const router = useRouter();
+  const confettiRef = useRef<LottieView>(null);
+
   const { id, total, correct, bonus } = useLocalSearchParams<{
     id: string;
     total: string;
@@ -29,6 +32,9 @@ export default function ChallengeResultScreen() {
   const [bothFinished, setBothFinished] = useState<boolean | null>(null);
 
   useEffect(() => {
+    if (percentage >= 70) {
+      confettiRef.current?.play();
+    }
     checkIfBothPlayersFinished();
   }, []);
 
@@ -41,16 +47,11 @@ export default function ChallengeResultScreen() {
 
       if (error) throw error;
 
-      console.log("Jogadores encontrados:", data);
-
-      // ⚠️ Obter apenas user_id únicos que terminaram
       const uniqueFinishedUserIds = Array.from(
         new Set(
           (data || []).filter((p) => p.finished === true).map((p) => p.user_id)
         )
       );
-
-      console.log("Jogadores únicos que finalizaram:", uniqueFinishedUserIds);
 
       setBothFinished(uniqueFinishedUserIds.length >= 2);
     } catch (err) {
@@ -60,9 +61,22 @@ export default function ChallengeResultScreen() {
   }
 
   return (
-    <View className="flex-1 bg-[#007AFF]">
+    <View style={styles.container}>
+      {/* condicional do confeti */}
+      {percentage >= 70 && (
+        <View pointerEvents="none" style={styles.confettiOverlay}>
+          <LottieView
+            ref={confettiRef}
+            source={require("@/assets/animations/confetti.json")}
+            autoPlay
+            loop={false}
+            style={styles.confetti}
+          />
+        </View>
+      )}
+
       {/* Header */}
-      <View className="px-2 pt-12 pb-4">
+      <View className="px-2 pt-12 pb-4 z-20">
         <View className="flex-row items-center">
           <TouchableOpacity onPress={() => router.back()}>
             <ArrowLeftWhite width={24} height={24} />
@@ -73,8 +87,7 @@ export default function ChallengeResultScreen() {
         </View>
       </View>
 
-      {/* Corpo */}
-      <View className="flex-1 bg-white rounded-t-3xl px-6 pt-10 pb-4 items-center">
+      <View className="flex-1 bg-white rounded-t-3xl px-6 pt-10 pb-4 items-center z-20">
         <View className="bg-white rounded-3xl px-6 py-10 items-center shadow-lg w-full justify-center mt-10">
           <ProgressCircle
             percentage={percentage}
@@ -85,7 +98,6 @@ export default function ChallengeResultScreen() {
           />
         </View>
 
-        {/* Ações */}
         <View className="gap-5 items-center mt-6 pt-4">
           {bothFinished === null ? (
             <ActivityIndicator color="#0040DD" />
@@ -117,3 +129,21 @@ export default function ChallengeResultScreen() {
     </View>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: "#007AFF",
+    position: "relative",
+  },
+  confettiOverlay: {
+    position: "absolute",
+    width: "100%",
+    height: "100%",
+    zIndex: 100,
+  },
+  confetti: {
+    width: "100%",
+    height: "100%",
+  },
+});

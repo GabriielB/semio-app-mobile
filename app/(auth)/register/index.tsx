@@ -225,7 +225,7 @@ export default function LoginScreen() {
                 <View className="flex-1 h-[1px] bg-white" />
               </View>
 
-              {/* botão google */}
+              {/* botão google
               <TouchableOpacity className="flex-row items-center  justify-center rounded-xl px-4 py-3 w-full mb-4">
                 <View className="bg-white w-10 h-10 rounded-full items-center justify-center mr-3 shadow-sm">
                   <Image
@@ -237,7 +237,7 @@ export default function LoginScreen() {
                 <Text className="text-white text-base font-bold">
                   Cadastre com Google
                 </Text>
-              </TouchableOpacity>
+              </TouchableOpacity> */}
 
               {/* Link de cadastro */}
               <View className="flex-row items-center justify-center gap-3">
