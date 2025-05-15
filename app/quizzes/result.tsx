@@ -1,11 +1,14 @@
-import React from "react";
+import React, { useEffect, useRef } from "react";
 import { View, Text, TouchableOpacity } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
+import LottieView from "lottie-react-native";
 import ArrowLeftWhite from "@/assets/icons/ArrowLeftWhite.svg";
 import ProgressCircle from "@/components/ProgressCircle";
 
 export default function QuizResultScreen() {
   const router = useRouter();
+  const animationRef = useRef<LottieView>(null);
+
   const { id, total, correct, bonus } = useLocalSearchParams<{
     id: string;
     total: string;
@@ -19,11 +22,35 @@ export default function QuizResultScreen() {
   const percentage = Math.round((correctNumber / totalNumber) * 100);
   const finalScore = percentage + bonusPoints;
 
+  useEffect(() => {
+    animationRef.current?.play();
+  }, []);
+
   return (
     <View className="flex-1 bg-[#007AFF]">
+      {/* animação de confeti */}
+      <View
+        pointerEvents="none"
+        style={{
+          position: "absolute",
+          width: "100%",
+          height: "100%",
+          zIndex: 10,
+        }}
+      >
+        <LottieView
+          ref={animationRef}
+          source={require("@/assets/animations/confetti.json")}
+          autoPlay
+          loop={false}
+          style={{ width: "100%", height: "100%" }}
+        />
+      </View>
+
+      {/* Header */}
       <View className="px-2 pt-12 pb-4">
         <View className="flex-row items-center">
-          <TouchableOpacity onPress={() => router.back()}>
+          <TouchableOpacity onPress={() => router.replace("/(tabs)/home")}>
             <ArrowLeftWhite width={24} height={24} />
           </TouchableOpacity>
           <Text className="text-white text-2xl font-bold flex-1 text-center mr-6">
@@ -32,6 +59,7 @@ export default function QuizResultScreen() {
         </View>
       </View>
 
+      {/* Conteúdo da tela */}
       <View className="flex-1 bg-white rounded-t-3xl px-6 pt-10 pb-4 items-center">
         <View className="bg-white rounded-3xl px-6 py-10 items-center shadow-lg w-full justify-center mt-10">
           <ProgressCircle

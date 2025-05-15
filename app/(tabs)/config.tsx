@@ -22,7 +22,6 @@ export default function ConfigScreen() {
 
   return (
     <View className="flex-1 bg-white px-4 justify-between">
-      {/* Header */}
       <View>
         <View className="pt-6 pb-4 flex-row items-center">
           <TouchableOpacity onPress={() => router.back()}>
@@ -33,12 +32,11 @@ export default function ConfigScreen() {
           </Text>
         </View>
 
-        {/* Seção: Conta */}
         <View className="mt-4 pt-2">
           <Text className="text-lg font-bold text-[#31144B] mb-4">Conta</Text>
 
           <View className="bg-[#E1F4FF] rounded-2xl shadow-md p-2">
-            <Pressable
+            {/* <Pressable
               className="flex-row justify-between items-center px-5 py-4"
               onPress={() => router.push("/preferences")}
             >
@@ -46,9 +44,9 @@ export default function ConfigScreen() {
                 Preferências
               </Text>
               <ArrowRight />
-            </Pressable>
+            </Pressable> */}
 
-            <View className="h-px bg-[#924BD0] mx-5" />
+            {/* <View className="h-px bg-[#924BD0] mx-5" /> */}
 
             <Pressable
               className="flex-row justify-between items-center px-5 py-4"
@@ -63,7 +61,6 @@ export default function ConfigScreen() {
         </View>
       </View>
 
-      {/* Rodapé */}
       <View className="mb-6">
         <TouchableOpacity
           className="border border-[#0040DD] rounded-full w-full mx-auto py-2 items-center"
