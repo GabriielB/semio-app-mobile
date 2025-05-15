@@ -32,7 +32,9 @@ export default function ChallengeResultScreen() {
   const [bothFinished, setBothFinished] = useState<boolean | null>(null);
 
   useEffect(() => {
-    confettiRef.current?.play();
+    if (percentage >= 70) {
+      confettiRef.current?.play();
+    }
     checkIfBothPlayersFinished();
   }, []);
 
@@ -60,16 +62,18 @@ export default function ChallengeResultScreen() {
 
   return (
     <View style={styles.container}>
-      {/* Confetti animation */}
-      <View pointerEvents="none" style={styles.confettiOverlay}>
-        <LottieView
-          ref={confettiRef}
-          source={require("@/assets/animations/confetti.json")}
-          autoPlay
-          loop={false}
-          style={styles.confetti}
-        />
-      </View>
+      {/* condicional do confeti */}
+      {percentage >= 70 && (
+        <View pointerEvents="none" style={styles.confettiOverlay}>
+          <LottieView
+            ref={confettiRef}
+            source={require("@/assets/animations/confetti.json")}
+            autoPlay
+            loop={false}
+            style={styles.confetti}
+          />
+        </View>
+      )}
 
       {/* Header */}
       <View className="px-2 pt-12 pb-4 z-20">
@@ -83,7 +87,6 @@ export default function ChallengeResultScreen() {
         </View>
       </View>
 
-      {/* Conteúdo */}
       <View className="flex-1 bg-white rounded-t-3xl px-6 pt-10 pb-4 items-center z-20">
         <View className="bg-white rounded-3xl px-6 py-10 items-center shadow-lg w-full justify-center mt-10">
           <ProgressCircle
@@ -131,7 +134,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#007AFF",
-    position: "relative", // ✅ NECESSÁRIO para zIndex funcionar corretamente
+    position: "relative",
   },
   confettiOverlay: {
     position: "absolute",

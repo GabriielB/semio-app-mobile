@@ -1,5 +1,3 @@
-// app/competitive/challenge/[id]/winner.tsx
-
 import React, { useEffect, useState } from "react";
 import {
   View,

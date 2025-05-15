@@ -23,31 +23,34 @@ export default function QuizResultScreen() {
   const finalScore = percentage + bonusPoints;
 
   useEffect(() => {
-    animationRef.current?.play();
-  }, []);
+    if (percentage >= 70) {
+      animationRef.current?.play();
+    }
+  }, [percentage]);
 
   return (
     <View className="flex-1 bg-[#007AFF]">
-      {/* animação de confeti */}
-      <View
-        pointerEvents="none"
-        style={{
-          position: "absolute",
-          width: "100%",
-          height: "100%",
-          zIndex: 10,
-        }}
-      >
-        <LottieView
-          ref={animationRef}
-          source={require("@/assets/animations/confetti.json")}
-          autoPlay
-          loop={false}
-          style={{ width: "100%", height: "100%" }}
-        />
-      </View>
+      {/* animação de confeti apenas se acertou >= 70% */}
+      {percentage >= 70 && (
+        <View
+          pointerEvents="none"
+          style={{
+            position: "absolute",
+            width: "100%",
+            height: "100%",
+            zIndex: 10,
+          }}
+        >
+          <LottieView
+            ref={animationRef}
+            source={require("@/assets/animations/confetti.json")}
+            autoPlay
+            loop={false}
+            style={{ width: "100%", height: "100%" }}
+          />
+        </View>
+      )}
 
-      {/* Header */}
       <View className="px-2 pt-12 pb-4">
         <View className="flex-row items-center">
           <TouchableOpacity onPress={() => router.replace("/(tabs)/home")}>
@@ -59,7 +62,6 @@ export default function QuizResultScreen() {
         </View>
       </View>
 
-      {/* Conteúdo da tela */}
       <View className="flex-1 bg-white rounded-t-3xl px-6 pt-10 pb-4 items-center">
         <View className="bg-white rounded-3xl px-6 py-10 items-center shadow-lg w-full justify-center mt-10">
           <ProgressCircle
