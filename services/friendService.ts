@@ -84,7 +84,7 @@ export const friendService = {
       return false;
     }
 
-    // Antes de inserir, garantir que os dois lados ainda não existam
+    // antes de inserir, garantir que os dois lados ainda não existam
     const { data: existing, error: existingError } = await supabase
       .from("friends")
       .select("id")
